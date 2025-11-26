@@ -1,0 +1,33 @@
+name: Update TV Schedule Daily
+
+on:
+  schedule:
+    # Run at 4:00 AM Israel time (2:00 AM UTC) every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  update-schedule:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Run scraper
+        run: npm start
+      
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          git add schedule.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update TV schedule - $(date +'%Y-%m-%d')" && git push)
